@@ -148,33 +148,7 @@ All required complex DS (graphs, custom compression) are implemented from scratc
 
 ```
 project_root/
-│
-├── src/
-│ ├── main.cpp
-│ ├── xml_parser.cpp
-│ ├── xml_formatter.cpp
-│ ├── xml_json.cpp
-│ ├── xml_mini.cpp
-│ ├── compressor.cpp
-│ ├── graph.cpp
-│ ├── analysis.cpp
-│ └── gui.cpp
-│
-├── include/
-│ ├── parser.hpp
-│ ├── formatter.hpp
-│ ├── compressor.hpp
-│ ├── graph.hpp
-│ └── gui.hpp
-│
-├── assets/
-│ └── icons/
-│
-├── screenshots/
-│
-├── tests/
-│
-└── README.md
+
 ```
 
 ---
