@@ -154,9 +154,8 @@ project_root/
 ---
 
 ## 👥 Team Members  
-_Add your names here:_
 
-|          Name          | ID | Role |
+|          Name          | ID      | Role   |
 |------------------------|---------|--------|
 | Saeed Bayoumy Nabawy   | 2200950 | Team A |
 | Member 2               |         |        |
@@ -166,3 +165,14 @@ _Add your names here:_
 | Member 6               |         |        |
 | Member 7               |         |        |
 | Member 8               |         |        |
+
+---
+
+## 👥 Team roles
+|          team          |              Role              |
+|------------------------|--------------------------------|
+| Team A                 |Reading XML + consistency check |
+| Team B                 |XML formatting + minifying      |
+| Team C                 |XML → JSON converter            |
+| Team D                 |Compression + Decompression     |
+| Team E                 |GUI + integration               |
