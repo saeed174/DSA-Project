@@ -138,7 +138,6 @@ _Add your actual screenshots later:_
 - `queue / priority_queue` where needed  
 - Graph stored using **adjacency list**  
 - Custom structures for posts & users  
-(Level 1 allowed structures — page 2) :contentReference[oaicite:6]{index=6}
 
 ### Custom Implementations  
 All required complex DS (graphs, custom compression) are implemented from scratch.
