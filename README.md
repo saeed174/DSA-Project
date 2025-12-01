@@ -191,3 +191,5 @@ _Add your names here:_
 | Member 4               |         |        |
 | Member 5               |         |        |
 | Member 6               |         |        |
+| Member 7               |         |        |
+| Member 8               |         |        |
