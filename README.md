@@ -158,7 +158,7 @@ project_root/
 |          Name          | ID      | Role   |
 |------------------------|---------|--------|
 | Saeed Bayoumy Nabawy   | 2200950 | Team A |
-| Member 2               |         |        |
+| Marcelino Maged Khalil | 2200909 | Team E |
 | Member 3               |         |        |
 | Member 4               |         |        |
 | Member 5               |         |        |
@@ -168,7 +168,7 @@ project_root/
 
 ---
 
-## 👥 Team roles
+## 👥 Team Roles
 |          team          |              Role              |
 |------------------------|--------------------------------|
 | Team A                 |Reading XML + consistency check |
