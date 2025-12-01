@@ -17,8 +17,7 @@ The system provides two operation modes:
 1. **Command-Line Interface (CLI)**
 2. **Graphical User Interface (GUI)**
 
-It supports XML validation, formatting, compression, converting to JSON, network graph building, and advanced analysis.  
-(According to the Project Description document pages 4–20) :contentReference[oaicite:1]{index=1}
+It supports XML validation, formatting, compression, converting to JSON, network graph building, and advanced analysis. 
 
 ---
 
@@ -28,7 +27,6 @@ It supports XML validation, formatting, compression, converting to JSON, network
 - Build a functional **GUI**
 - Visualize social network **graphs**
 - Implement real-world **file-processing tools**  
-(From page 20 — “Why this project”) :contentReference[oaicite:2]{index=2}
 
 ---
 
@@ -44,7 +42,6 @@ It supports XML validation, formatting, compression, converting to JSON, network
 ✔ Custom Compression & Decompression  
 ✔ Full CLI Mode  
 ✔ Full GUI Mode  
-(From pages 5–13) :contentReference[oaicite:3]{index=3}
 
 ---
 
@@ -58,7 +55,6 @@ It supports XML validation, formatting, compression, converting to JSON, network
 - Suggested Users (followers-of-followers)
 
 ✔ Post Search by **word** or **topic**  
-(From pages 14–18) :contentReference[oaicite:4]{index=4}
 
 ---
 
