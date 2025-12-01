@@ -99,7 +99,7 @@ xml_editor draw -i input.xml -o graph.jpg
 
 #### ✔ Network Analysis
 ```bash
-\xml_editor most_active -i input.xml
+xml_editor most_active -i input.xml
 xml_editor most_influencer -i input.xml
 xml_editor mutual -i input.xml -ids 1,2,3
 xml_editor suggest -i input.xml -id 1
