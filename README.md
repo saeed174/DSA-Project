@@ -161,7 +161,7 @@ project_root/
 | Marcelino Maged Khalil | 2200909 | Team E |
 | Mostafa Ahmed          | 2201092 | Team A |
 | Mohamed Hamdy Youssif  | 2200416 | Team D |
-| Member 5               |         |        |
+| Abdulrahman Ibrahem    | 2200960 | Team B |
 | Member 6               |         |        |
 | Member 7               |         |        |
 | Member 8               |         |        |
