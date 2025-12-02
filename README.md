@@ -160,7 +160,7 @@ project_root/
 | Saeed Bayoumy Nabawy   | 2200950 | Team A |
 | Marcelino Maged Khalil | 2200909 | Team E |
 | Mostafa Ahmed          | 2201092 | Team A |
-| Member 4               |         |        |
+| Mohamed Hamdy Youssif  | 2200416 | Team D |
 | Member 5               |         |        |
 | Member 6               |         |        |
 | Member 7               |         |        |
