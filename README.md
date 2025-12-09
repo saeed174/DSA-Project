@@ -162,7 +162,7 @@ project_root/
 | Mostafa Ahmed          | 2201092 | Team A |
 | Mohamed Hamdy Youssif  | 2200416 | Team D |
 | Abdulrahman Ibrahem    | 2200960 | Team B |
-| Member 6               |         |        |
+| Mohamed Ali Mohamed    | 2200942 | Team B |
 | Member 7               |         |        |
 | Member 8               |         |        |
 
