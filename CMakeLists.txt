@@ -8,19 +8,22 @@ set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_PREFIX_PATH "C:/Qt/6.5.3/mingw_64")
 
-find_package(Qt6 COMPONENTS
-        Core
-        Gui
-        Widgets
-        REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
-add_executable(DSA_PROJECTT gui.cpp)
+# ----- ADD ALL SOURCE FILES -----
+add_executable(DSA_PROJECTT
+        gui.cpp
+        minifier.cpp
+        formatter.cpp
+        xmlCheck.h
+        compression_decompression.cpp
+)
+
 target_link_libraries(DSA_PROJECTT
         Qt::Core
         Qt::Gui
         Qt::Widgets
 )
-
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
@@ -48,5 +51,5 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
-    endforeach (QT_LIB)
+    endforeach ()
 endif ()
