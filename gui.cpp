@@ -8,8 +8,10 @@
 #include <QTextEdit>
 #include <QFile>
 
-// Include your XML operations here
+
 #include "xmlCheck.h"
+#include "minifier.h"
+#include "compression_decompression.h"
 #include "formatter.h"
 
 // ==================== SHOW FILE WINDOW =====================
@@ -85,10 +87,16 @@ public:
         Decompressing->setStyleSheet("background-color: #6a4c93; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
         Minifying->setStyleSheet("background-color: #3d5af1; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
 
+
+
+
+
         // ===== CONNECT BUTTONS =====
         connect(consistency, &QPushButton::clicked, this, &OperationsWindow::checkConsistency);
-
-
+        connect(Minifying, &QPushButton::clicked,this, &OperationsWindow::runMinifying);
+        connect(Compressing, &QPushButton::clicked, this, &OperationsWindow::runCompressing);
+        connect(Decompressing, &QPushButton::clicked, this, &OperationsWindow::runDecompressing);
+        connect(Formatting, &QPushButton::clicked, this, &OperationsWindow::runFormatting);
 
     }
 
@@ -104,7 +112,9 @@ private:
     QPushButton* Decompressing;
     QPushButton* Minifying;
 
+
 private slots:
+
 
     /// ================= CONSISTENCY CHECK =================
     void checkConsistency() {
@@ -115,6 +125,67 @@ private slots:
         else
             QMessageBox::warning(this, "XML Check", "XML has ERRORS ❌");
     }
+
+    void runMinifying() {
+
+    // Read XML with spaces
+    string xml = readXMLFile_withSpaces(filePath.toStdString());
+
+    // Use your class
+    XMLMinifier minifier;
+    string minified = minifier.minifyXML(xml);
+
+    // Show in window
+    ShowFileWindow* viewer =
+        new ShowFileWindow(QString::fromStdString(minified),
+                           nullptr,
+                           false);   // false -> show processed text
+
+    viewer->show();
+}
+
+    void runCompressing() {
+        QString output = QFileDialog::getSaveFileName(
+            this, "Save Compressed File", "", "Binary Files (*.bin);;All Files (*)");
+
+        if (output.isEmpty()) return;
+
+        compressor c;
+        c.compress_file(filePath.toStdString(), output.toStdString());
+
+        QMessageBox::information(this, "Done", "File Compressed Successfully!");
+    }
+
+    void runDecompressing() {
+        QString output = QFileDialog::getSaveFileName(
+            this, "Save Decompressed File", "", "XML Files (*.xml);;All Files (*)");
+
+        if (output.isEmpty()) return;
+
+        decompressor d;
+        d.decompress_file(filePath.toStdString(), output.toStdString());
+
+        QMessageBox::information(this, "Done", "File Decompressed Successfully!");
+    }
+
+    void runFormatting() {
+    // Read the XML file
+    string xml = readXMLFile_withSpaces(filePath.toStdString());
+
+    // Apply formatting
+    XMLFormatter formatter;
+    string formatted = formatter.formatXML(xml);
+
+    // Show formatted XML in a viewer window
+    ShowFileWindow* viewer =
+        new ShowFileWindow(QString::fromStdString(formatted),
+                           nullptr,
+                           false);   // false = show text directly, not file
+
+    viewer->show();
+}
+
+
 
 
 
