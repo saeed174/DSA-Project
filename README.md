@@ -164,7 +164,7 @@ project_root/
 | Abdulrahman Ibrahem    | 2200960 | Team B |
 | Mohamed Ali Mohamed    | 2200942 | Team B |
 | Zeyad Abdallah Shaban  | 2200932 | Team E |
-| Member 8               |         |        |
+| Kareem ahmed elythy             |   2200941      |   Team C     |
 
 ---
 
