@@ -1,4 +1,4 @@
-#include <QApplication>
+
 #include <QLabel>
 #include <QLineEdit>
 #include <QHBoxLayout>
@@ -7,12 +7,113 @@
 #include <QMessageBox>
 #include <QTextEdit>
 #include <QFile>
-
-
+#include <QStyle>
+#include <QApplication>
+#include <QGraphicsDropShadowEffect>
 #include "xmlCheck.h"
 #include "minifier.h"
 #include "compression_decompression.h"
 #include "formatter.h"
+// ==================== ShowGraph =====================
+class Graph : public QWidget {
+    QString filePath;
+
+public:
+    Graph(QString selectedPath, QWidget* parent = nullptr)
+        : QWidget(parent), filePath(selectedPath)
+    {
+        setWindowTitle("Graph");
+        resize(500, 400);
+
+        // Main layout
+        Main_layout = new QVBoxLayout();
+        Main_layout->setSpacing(20);
+        Main_layout->setContentsMargins(40, 40, 40, 40);
+        setLayout(Main_layout);
+
+
+        row1 = new QHBoxLayout();
+        row1->setSpacing(20);
+
+        fun1 = createStyledButton("Fun 1", "#ff6b6b");
+        fun2 = createStyledButton("Fun 2", "#4ecdc4");
+
+        row1->addWidget(fun1);
+        row1->addWidget(fun2);
+
+        row2 = new QHBoxLayout();
+        row2->setSpacing(20);
+
+        fun3 = createStyledButton("Fun 3", "#1a535c");
+        fun4 = createStyledButton("Fun 4", "#ffa600", "black");
+
+        row2->addWidget(fun3);
+        row2->addWidget(fun4);
+
+
+        Main_layout->addStretch();
+        Main_layout->addLayout(row1);
+        Main_layout->addLayout(row2);
+        Main_layout->addStretch();
+
+        applyShadowEffect(fun1);
+        applyShadowEffect(fun2);
+        applyShadowEffect(fun3);
+        applyShadowEffect(fun4);
+    }
+    // signals
+    // here
+
+private:
+
+    QPushButton* createStyledButton(QString text, QString color, QString textColor = "white")
+    {
+        QPushButton* btn = new QPushButton(text);
+
+        QString style = QString(R"(
+            QPushButton {
+                background-color: %1;
+                color: %2;
+                font-weight: bold;
+                border-radius: 12px;
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+            QPushButton:hover {
+                background-color: %1cc;  /* transparent hover */
+            }
+            QPushButton:pressed {
+                background-color: %1aa;
+                transform: scale(0.97);
+            }
+        )").arg(color, textColor);
+
+        btn->setStyleSheet(style);
+        btn->setFixedHeight(50);
+
+        return btn;
+    }
+    void applyShadowEffect(QWidget* w)
+    {
+        QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect();
+        shadow->setBlurRadius(20);
+        shadow->setColor(QColor(0, 0, 0, 90));
+        shadow->setOffset(0, 4);
+        w->setGraphicsEffect(shadow);
+    }
+
+
+    QVBoxLayout* Main_layout;
+    QHBoxLayout* row1;
+    QHBoxLayout* row2;
+    QPushButton* fun1;
+    QPushButton* fun2;
+    QPushButton* fun3;
+    QPushButton* fun4;
+
+    //signal operation
+    // here
+};
 
 // ==================== SHOW FILE WINDOW =====================
 class ShowFileWindow : public QWidget {
@@ -46,65 +147,71 @@ public:
 // ==================== OPERATION WINDOW =====================
 class OperationsWindow : public QWidget {
 public:
-    QString filePath;
-
     OperationsWindow(QString selectedPath, QWidget* parent = nullptr)
         : QWidget(parent), filePath(selectedPath)
     {
-        setWindowTitle("Operations Window");
-        resize(400, 300);
+        setWindowTitle("XML Operations");
+        resize(500, 380);
 
-        main_layout_op = new QVBoxLayout();
-        setLayout(main_layout_op);
+        // ================= MAIN PAGE LAYOUT ====================
+        QVBoxLayout* page = new QVBoxLayout(this);
+        page->setContentsMargins(25, 25, 25, 25);
+        page->setSpacing(20);
 
-        row1_op = new QHBoxLayout();
-        consistency = new QPushButton("consistency");
-        Converting_to_JSON = new QPushButton("Converting_to_JSON");
-        row1_op->addWidget(Converting_to_JSON);
-        row1_op->addWidget(consistency);
+        QLabel* header = new QLabel("XML OPERATIONS", this);
+        header->setAlignment(Qt::AlignCenter);
+        header->setStyleSheet("font-size: 23px; font-weight: bold; color: #333;");
+        page->addWidget(header);
 
-        row2_op = new QHBoxLayout();
-        Formatting = new QPushButton("Formatting");
-        Compressing = new QPushButton("Compressing");
-        row2_op->addWidget(Formatting);
-        row2_op->addWidget(Compressing);
-
-        row3_op = new QHBoxLayout();
-        Decompressing = new QPushButton("Decompressing");
-        Minifying = new QPushButton("Minifying");
-        row3_op->addWidget(Decompressing);
-        row3_op->addWidget(Minifying);
-
-        main_layout_op->addLayout(row1_op);
-        main_layout_op->addLayout(row2_op);
-        main_layout_op->addLayout(row3_op);
-
-        // Design
-        consistency->setStyleSheet("background-color: #ff6b6b; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
-        Converting_to_JSON->setStyleSheet("background-color: #4ecdc4; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
-        Formatting->setStyleSheet("background-color: #1a535c; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
-        Compressing->setStyleSheet("background-color: #ffa600; color: black; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
-        Decompressing->setStyleSheet("background-color: #6a4c93; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
-        Minifying->setStyleSheet("background-color: #3d5af1; color: white; font-weight: bold;border-radius: 8px;padding: 10px;font-size: 15px;");
+        QFrame* card = new QFrame(this);
+        card->setStyleSheet(
+            "QFrame {"
+            " background: #ffffff;"
+            " border-radius: 12px;"
+            " padding: 20px;"
+            " border: 1px solid #d0d0d0;"
+            "}"
+        );
+        QVBoxLayout* cardLayout = new QVBoxLayout(card);
+        cardLayout->setSpacing(18);
+        page->addWidget(card);
 
 
+        consistency = createButton("Check Consistency", style()->standardIcon(QStyle::SP_DialogApplyButton), "#ff5252");
+        Converting_to_JSON = createButton("Convert to JSON", style()->standardIcon(QStyle::SP_FileIcon), "#26a69a");
+        Formatting = createButton("Format XML", style()->standardIcon(QStyle::SP_BrowserReload), "#1e88e5");
+        Compressing = createButton("Compress File", style()->standardIcon(QStyle::SP_ArrowDown), "#fbc02d");
+        Decompressing = createButton("Decompress File", style()->standardIcon(QStyle::SP_ArrowUp), "#6a1b9a");
+        Minifying = createButton("Minify XML", style()->standardIcon(QStyle::SP_ComputerIcon), "#3949ab");
 
+        QGridLayout* grid = new QGridLayout();
+        grid->setHorizontalSpacing(20);
+        grid->setVerticalSpacing(15);
 
+        grid->addWidget(consistency, 0, 0);
+        grid->addWidget(Converting_to_JSON, 0, 1);
 
-        // ===== CONNECT BUTTONS =====
+        grid->addWidget(Formatting, 1, 0);
+        grid->addWidget(Compressing, 1, 1);
+
+        grid->addWidget(Decompressing, 2, 0);
+        grid->addWidget(Minifying, 2, 1);
+
+        cardLayout->addLayout(grid);
+
+        //  SIGNALS
         connect(consistency, &QPushButton::clicked, this, &OperationsWindow::checkConsistency);
-        connect(Minifying, &QPushButton::clicked,this, &OperationsWindow::runMinifying);
+        connect(Minifying, &QPushButton::clicked, this, &OperationsWindow::runMinifying);
         connect(Compressing, &QPushButton::clicked, this, &OperationsWindow::runCompressing);
         connect(Decompressing, &QPushButton::clicked, this, &OperationsWindow::runDecompressing);
         connect(Formatting, &QPushButton::clicked, this, &OperationsWindow::runFormatting);
 
+        // (optional) connect JSON later
     }
 
 private:
-    QVBoxLayout* main_layout_op;
-    QHBoxLayout* row1_op;
-    QHBoxLayout* row2_op;
-    QHBoxLayout* row3_op;
+    QString filePath;
+
     QPushButton* consistency;
     QPushButton* Converting_to_JSON;
     QPushButton* Formatting;
@@ -113,40 +220,63 @@ private:
     QPushButton* Minifying;
 
 
+    //  UNIVERSAL BUTTON CREATOR (with icon + color)
+    QPushButton* createButton(QString text, QIcon icon, QString colorHex)
+    {
+        QPushButton* btn = new QPushButton(icon, text);
+        btn->setCursor(Qt::PointingHandCursor);
+        btn->setIconSize(QSize(22, 22));
+
+        btn->setStyleSheet(
+            "QPushButton {"
+            " background: " + colorHex + ";"
+            " color: white;"
+            " padding: 10px;"
+            " border-radius: 8px;"
+            " font-size: 14px;"
+            " font-weight: bold;"
+            " text-align: left;"
+            "}"
+            "QPushButton:hover {"
+            " background: " + colorHex + "cc;"
+            "}"
+        );
+        return btn;
+    }
+
 private slots:
 
 
-    /// ================= CONSISTENCY CHECK =================
-    void checkConsistency() {
+    void checkConsistency()
+    {
         string xml = readXMLFile_withSpaces(filePath.toStdString());
         bool ok = checkXMLConsistency(xml);
+
         if (ok)
             QMessageBox::information(this, "XML Check", "XML is CONSISTENT ✔");
         else
             QMessageBox::warning(this, "XML Check", "XML has ERRORS ❌");
     }
 
-    void runMinifying() {
 
-    // Read XML with spaces
-    string xml = readXMLFile_withSpaces(filePath.toStdString());
+    void runMinifying()
+    {
+        string xml = readXMLFile_withSpaces(filePath.toStdString());
 
-    // Use your class
-    XMLMinifier minifier;
-    string minified = minifier.minifyXML(xml);
+        XMLMinifier minifier;
+        string minified = minifier.minifyXML(xml);
 
-    // Show in window
-    ShowFileWindow* viewer =
-        new ShowFileWindow(QString::fromStdString(minified),
-                           nullptr,
-                           false);   // false -> show processed text
+        ShowFileWindow* viewer =
+            new ShowFileWindow(QString::fromStdString(minified), nullptr, false);
 
-    viewer->show();
-}
+        viewer->show();
+    }
 
-    void runCompressing() {
+
+    void runCompressing()
+    {
         QString output = QFileDialog::getSaveFileName(
-            this, "Save Compressed File", "", "Binary Files (*.bin);;All Files (*)");
+            this, "Save Compressed File", "", "Binary Files (*.bin)");
 
         if (output.isEmpty()) return;
 
@@ -156,9 +286,11 @@ private slots:
         QMessageBox::information(this, "Done", "File Compressed Successfully!");
     }
 
-    void runDecompressing() {
+
+    void runDecompressing()
+    {
         QString output = QFileDialog::getSaveFileName(
-            this, "Save Decompressed File", "", "XML Files (*.xml);;All Files (*)");
+            this, "Save Decompressed File", "", "XML Files (*.xml)");
 
         if (output.isEmpty()) return;
 
@@ -168,126 +300,148 @@ private slots:
         QMessageBox::information(this, "Done", "File Decompressed Successfully!");
     }
 
-    void runFormatting() {
-    // Read the XML file
-    string xml = readXMLFile_withSpaces(filePath.toStdString());
 
-    // Apply formatting
-    XMLFormatter formatter;
-    string formatted = formatter.formatXML(xml);
+    void runFormatting()
+    {
+        string xml = readXMLFile_withSpaces(filePath.toStdString());
 
-    // Show formatted XML in a viewer window
-    ShowFileWindow* viewer =
-        new ShowFileWindow(QString::fromStdString(formatted),
-                           nullptr,
-                           false);   // false = show text directly, not file
+        XMLFormatter formatter;
+        string formatted = formatter.formatXML(xml);
 
-    viewer->show();
-}
-
-
-
-
-
-
-
+        ShowFileWindow* viewer =
+            new ShowFileWindow(QString::fromStdString(formatted), nullptr, false);
+        viewer->show();
+    }
 };
+
 
 // ==================== MAIN WINDOW =====================
 class Window : public QWidget {
 public:
     Window(QWidget* parent = nullptr) : QWidget(parent) {
-        setWindowTitle("Data_Structure");
-        resize(400, 300);
+        setWindowTitle("XML Project");
+        resize(480, 360);
 
-        main_layout = new QVBoxLayout();
-        setLayout(main_layout);
+        // ===================== Main Layout =========================
+        QVBoxLayout* page = new QVBoxLayout(this);
+        page->setContentsMargins(30, 30, 30, 30);
+        page->setSpacing(20);
 
-        row0 = new QLabel("XML_PROJECT");
-        row0->setAlignment(Qt::AlignCenter);
-        main_layout->addWidget(row0);
 
-        row1 = new QHBoxLayout();
-        select_XML_File = new QPushButton("Select File");
-        row1->addWidget(select_XML_File);
+        QLabel* title = new QLabel("XML PROJECT", this);
+        title->setAlignment(Qt::AlignCenter);
+        title->setStyleSheet("font-size: 26px; font-weight: bold; color: #333;");
+        page->addWidget(title);
 
-        row2 = new QHBoxLayout();
-        Operations = new QPushButton("XML_Operations");
-        ShowGraph = new QPushButton("Show Graph");
-        showFile = new QPushButton("Show File");
-
-        row2->addWidget(Operations);
-        row2->addWidget(ShowGraph);
-        row2->addWidget(showFile);
-
-        main_layout->addLayout(row1);
-        main_layout->addLayout(row2);
-
-        //=========================design=================================
-        select_XML_File->setStyleSheet(
-        "QPushButton {"
-         "background-color: #2196F3;"
-         "color: white;"
-         "border-radius: 8px;"
-         "padding: 10px;"
-         "font-size: 15px;""}"
-         "QPushButton:hover {");
-        Operations->setStyleSheet(
-            "QPushButton {"
-            "background-color: #9C27B0;"
-            "color: white;"
-            "border-radius: 8px;"
-            "padding: 10px;"
-            "font-size: 15px;"
+        //  Card Container
+        QFrame* card = new QFrame(this);
+        card->setStyleSheet(
+            "QFrame {"
+            " background: #ffffff;"
+            " border-radius: 15px;"
+            " padding: 20px;"
+            " border: 1px solid #ddd;"
             "}"
         );
-        ShowGraph->setStyleSheet(
-            "QPushButton {"
-            "background-color: #FF9800;"
-            "color: white;"
-            "border-radius: 8px;"
-            "padding: 10px;"
-            "font-size: 15px;"
-            "}"
-        );
-        showFile->setStyleSheet(
-        "QPushButton {"
-         "background-color: #9C27B0;"
-         "color: white;"
-         "border-radius: 8px;"
-         "padding: 10px;"
-         "font-size: 15px;""}"
-         "QPushButton:hover {");
-        //=========================design=================================
 
-        // Connect buttons
-        connect(select_XML_File, &QPushButton::clicked,
+        //white box
+        QVBoxLayout* cardLayout = new QVBoxLayout(card);
+        cardLayout->setSpacing(20);
+
+        //  Select File Button
+        QPushButton* selectFile = new QPushButton("Select XML File");
+        stylePrimaryButton(selectFile);
+        cardLayout->addWidget(selectFile);
+
+        //  3 buttons
+        QHBoxLayout* actions = new QHBoxLayout();
+        actions->setSpacing(15);
+
+        QPushButton* operationsBtn = new QPushButton("Operations");
+        QPushButton* graphBtn = new QPushButton("Show Graph");
+        QPushButton* showFileBtn = new QPushButton("Show File");
+        // design for 3 button
+        styleSecondaryButton(operationsBtn, "#673AB7");
+        styleSecondaryButton(graphBtn, "#F57C00");
+        styleSecondaryButton(showFileBtn, "#009688");
+
+        actions->addWidget(operationsBtn);
+        actions->addWidget(graphBtn);
+        actions->addWidget(showFileBtn);
+
+        cardLayout->addLayout(actions);
+
+        // Add Card to page
+        page->addWidget(card);
+
+        //  CONNECT SIGNALS
+        connect(selectFile, &QPushButton::clicked,
                 this, &Window::openFileDialog);
 
-        connect(Operations, &QPushButton::clicked,
+        connect(operationsBtn, &QPushButton::clicked,
                 this, &Window::processXML);
 
-        connect(showFile, &QPushButton::clicked,
+        connect(showFileBtn, &QPushButton::clicked,
                 this, &Window::showSelectedFile);
+
+        connect(graphBtn, &QPushButton::clicked,
+                this, &Window::openGraph);
     }
 
 private:
-    QVBoxLayout* main_layout;
-    QLabel* row0;
-    QHBoxLayout* row1;
-    QHBoxLayout* row2;
-    QPushButton* select_XML_File;
-    QPushButton* ShowGraph;
-    QPushButton* Operations;
-    QPushButton* showFile;
+
+
+
+    void stylePrimaryButton(QPushButton* btn) {
+        btn->setStyleSheet(
+            "QPushButton {"
+            "  background: #2196F3;"
+            "  color: white;"
+            "  border-radius: 10px;"
+            "  padding: 12px;"
+            "  font-size: 16px;"
+            "}"
+            "QPushButton:hover { background: #42A5F5; }"
+            "QPushButton:pressed { background: #1E88E5; }"
+        );
+        btn->setCursor(Qt::PointingHandCursor);
+    }
+
+    void styleSecondaryButton(QPushButton* btn, const QString& color) {
+        btn->setStyleSheet(
+            "QPushButton {"
+            "  background: " + color + ";"
+            "  color: white;"
+            "  border-radius: 8px;"
+            "  padding: 10px;"
+            "  font-size: 14px;"
+            "}"
+            "QPushButton:hover { opacity: 0.85; }"
+        );
+        btn->setCursor(Qt::PointingHandCursor);
+    }
+
+
 
     QString selectedFilePath;
     OperationsWindow* opWindow = nullptr;
+    Graph* graph = nullptr;
 
-    // ===== SELECT FILE =====
+    void openGraph() {
+        if (selectedFilePath.isEmpty()) {
+            QMessageBox::warning(this, "Error", "Select a file first.");
+            return;
+        }
+        if (!graph)
+            graph = new Graph(selectedFilePath);
+        graph->show();
+        graph->raise();
+    }
+
     void openFileDialog() {
-        QString filePath =
-            QFileDialog::getOpenFileName(this,"Select XML File","","XML Files (*.xml)");
+        QString filePath = QFileDialog::getOpenFileName(
+            this, "Select XML File", "", "XML Files (*.xml)"
+        );
 
         if (!filePath.isEmpty()) {
             selectedFilePath = filePath;
@@ -295,13 +449,11 @@ private:
         }
     }
 
-    // ===== OPEN OPERATIONS WINDOW =====
     void processXML() {
         if (selectedFilePath.isEmpty()) {
             QMessageBox::warning(this, "Error", "Select a file first.");
             return;
         }
-
         if (!opWindow)
             opWindow = new OperationsWindow(selectedFilePath);
 
@@ -309,7 +461,6 @@ private:
         opWindow->raise();
     }
 
-    // ===== SHOW RAW XML FILE =====
     void showSelectedFile() {
         if (selectedFilePath.isEmpty()) {
             QMessageBox::warning(this, "Error", "Select a file first.");
@@ -319,6 +470,7 @@ private:
         viewer->show();
     }
 };
+
 
 // ==================== MAIN() =====================
 int main(int argc, char* argv[]) {
