@@ -163,7 +163,7 @@ project_root/
 | Mohamed Hamdy Youssif  | 2200416 | Team D |
 | Abdulrahman Ibrahem    | 2200960 | Team B |
 | Mohamed Ali Mohamed    | 2200942 | Team B |
-| Member 7               |         |        |
+| Zeyad Abdallah Shaban  | 2200932 | Team E |
 | Member 8               |         |        |
 
 ---
