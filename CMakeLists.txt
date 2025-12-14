@@ -17,6 +17,8 @@ add_executable(DSA_PROJECTT
         formatter.cpp
         xmlCheck.h
         compression_decompression.cpp
+        SimpleXmlToJson.cpp
+        SimpleXmlToJson.h
 )
 
 target_link_libraries(DSA_PROJECTT
