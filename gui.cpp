@@ -369,6 +369,9 @@ public:
         Compressing = createButton("Compress File", style()->standardIcon(QStyle::SP_ArrowDown), "#facc15");
         Decompressing = createButton("Decompress File", style()->standardIcon(QStyle::SP_ArrowUp), "#9333ea");
         Minifying = createButton("Minify XML", style()->standardIcon(QStyle::SP_ComputerIcon), "#6366f1");
+        MisMatchTag =createButton("MisMatchTag",style()->standardIcon(QStyle::SP_MessageBoxWarning), "#ff9800");
+        CorrectMismatchTag=createButton("CorrectMismatchTag",style()->standardIcon(QStyle::SP_MediaPlay), "#4caf50");
+
 
         QGridLayout* grid = new QGridLayout();
         grid->setHorizontalSpacing(20);
@@ -380,8 +383,11 @@ public:
         grid->addWidget(Compressing, 1, 1);
         grid->addWidget(Decompressing, 2, 0);
         grid->addWidget(Minifying, 2, 1);
+        grid->addWidget(MisMatchTag, 3, 0);
+        grid->addWidget(CorrectMismatchTag, 3, 1);
 
         cardLayout->addLayout(grid);
+
 
         // ================= BEFORE / AFTER =================
         QSplitter* splitter = new QSplitter(Qt::Horizontal, this);
@@ -461,6 +467,8 @@ public:
         splitter->setStretchFactor(0, 1);
         splitter->setStretchFactor(1, 1);
 
+        //================================================================================
+
         page->addWidget(splitter);
 
         // ================= SIGNALS =================
@@ -470,18 +478,23 @@ public:
         connect(Decompressing, &QPushButton::clicked, this, &OperationsWindow::runDecompressing);
         connect(Formatting, &QPushButton::clicked, this, &OperationsWindow::runFormatting);
         connect(Converting_to_JSON, &QPushButton::clicked, this, &OperationsWindow::onConvertClicked);
+        connect(MisMatchTag,QPushButton::clicked,this,&OperationsWindow::runMismatchTag);
+        connect(CorrectMismatchTag,QPushButton::clicked,this,&OperationsWindow::runCorrectMismatchTag);
+    }
+    void setFilePath(const QString& path) {
+        filePath = path;
     }
 
 private:
     QString filePath;
-
     QPushButton* consistency;
     QPushButton* Converting_to_JSON;
     QPushButton* Formatting;
     QPushButton* Compressing;
     QPushButton* Decompressing;
     QPushButton* Minifying;
-
+    QPushButton* MisMatchTag;////////////////////////////////////////
+    QPushButton* CorrectMismatchTag;
     QTextEdit* beforeEdit;
     QTextEdit* afterEdit;
 
@@ -504,6 +517,7 @@ private:
         );
         return btn;
     }
+
 
 private slots:
     void updatePreview(const QString& before, const QString& after)
@@ -572,10 +586,66 @@ private slots:
             QMessageBox::information(this, "Done", "File Decompressed Successfully!");
         }
     }
+
+    void runMismatchTag()
+    {
+        string xml = readXMLFile_withSpaces(filePath.toStdString());
+        vector<pair<size_t, string>> mismatches = findMismatchedTags(xml);
+
+
+        beforeEdit->setText(QString::fromStdString(xml));
+
+        QString result;
+
+        if (mismatches.empty())
+        {
+            result = "✔ No mismatched tags found.\nXML is well-formed.";
+        }
+        else
+        {
+            result = "❌ Mismatched Tags Found:\n\n";
+
+            for (auto& m : mismatches)
+            {
+                result +=
+                    "Position: " + QString::number(m.first) +
+                    " -> " + QString::fromStdString(m.second) + "\n";
+            }
+        }
+
+        afterEdit->setText(result);
+        afterEdit->moveCursor(QTextCursor::Start);
+    }
+
+    void runCorrectMismatchTag()
+    {
+        string xml = readXMLFile_withSpaces(filePath.toStdString());
+
+        // Find mismatches first
+        vector<pair<size_t, string>> mismatches = findMismatchedTags(xml);
+
+        beforeEdit->setText(QString::fromStdString(xml));
+
+        // If no mismatches → do nothing
+        if (mismatches.empty())
+        {
+            afterEdit->setText("✔ No mismatched tags found.\nNo correction needed.");
+            afterEdit->moveCursor(QTextCursor::Start);
+            return;
+        }
+
+        // Correct only if mismatches exist
+        string correctedXML = correctMismatchedTags(xml);
+
+        QString result;
+        result += "✅ Mismatched tags corrected successfully.\n\n";
+        result += "---- Corrected XML ----\n\n";
+        result += QString::fromStdString(correctedXML);
+
+        afterEdit->setText(result);
+        afterEdit->moveCursor(QTextCursor::Start);
+    }
 };
-
-
-
 // ==================== MAIN WINDOW =====================
 class Window : public QWidget {
 public:
@@ -717,10 +787,13 @@ private:
 
         if (!opWindow)
             opWindow = new OperationsWindow(selectedFilePath);
+        else
+            opWindow->setFilePath(selectedFilePath); // 🔥 تحديث المسار
 
         opWindow->show();
         opWindow->raise();
     }
+
 
     void showSelectedFile() {
         if (selectedFilePath.isEmpty()) {
@@ -759,9 +832,6 @@ private:
         writeWindow->show();
     }
 };
-
-
-
 // ==================== MAIN() =====================
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
