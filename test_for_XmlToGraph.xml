@@ -1,0 +1,37 @@
+<users>
+    <user>
+        <id>U1</id>
+        <name>Alice</name>
+        <posts>
+            <post>Hello world!</post>
+            <post>Graph theory is fun.</post>
+        </posts>
+        <followers>
+            <id>U2</id>
+            <id>U3</id>
+        </followers>
+    </user>
+
+    <user>
+        <id>U2</id>
+        <name>Bob</name>
+        <posts>
+            <post>Good morning!</post>
+        </posts>
+        <followers>
+            <id>U1</id>
+        </followers>
+    </user>
+
+    <user>
+        <id>U3</id>
+        <name>Charlie</name>
+        <posts>
+            <post>C++ is powerful.</post>
+        </posts>
+        <followers>
+            <id>U1</id>
+            <id>U2</id>
+        </followers>
+    </user>
+</users>
