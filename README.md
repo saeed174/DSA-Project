@@ -121,8 +121,7 @@ The GUI allows users to:
 - View file contents in a read-only text area  
 - Run all operations via buttons  
 - Display results live  
-- Save processed files  
-(From page 19) :contentReference[oaicite:5]{index=5}
+- Save processed files
 
 ### GUI Placeholder Preview  
 _Add your actual screenshots later:_
