@@ -136,7 +136,7 @@ _Add your actual screenshots later:_
 - `vector` for dynamic storage  
 - `stack` for tag matching  
 - `queue / priority_queue` where needed  
-- Graph stored using **adjacency list**  
+- Graph stored using **Matrix**  
 - Custom structures for posts & users  
 
 ### Custom Implementations  
