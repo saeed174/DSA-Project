@@ -19,6 +19,7 @@ add_executable(DSA_PROJECTT
         compression_decompression.cpp
         SimpleXmlToJson.cpp
         SimpleXmlToJson.h
+        main.cpp
 )
 
 target_link_libraries(DSA_PROJECTT
