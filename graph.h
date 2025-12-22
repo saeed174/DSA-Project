@@ -78,6 +78,10 @@ public:
     vector<pair<string, string>> MutualFollowers(const vector<string> &users);
     pair<string, string> Most_Active();
     vector<pair<string, string>> Suggest(const string &user);
+	
+	// Search
+	vector<tuple<string,string,string>> WordPostSearch(const string& word);
+    vector<tuple<string,string,string>> topicPostSearch(const string& Topic);
 };
 
 // External helper
