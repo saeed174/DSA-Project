@@ -323,6 +323,31 @@ vector<pair<string, string>> graph<T>::Suggest(const string &user)
 
 //****************abdelrahman  */
 
+template <class T>
+vector<tuple<string,string,string>> graph<T>::WordPostSearch(const string& word) {
+    vector<tuple<string,string,string>> result;
+    string searchWord = word;
+
+    transform(searchWord.begin(), searchWord.end(),searchWord.begin(),::tolower);
+
+    for (const auto& pair : ID_MAP)
+    {
+        const UserData& user = pair.second;
+
+        for (const postData& post : user.posts) 
+        {
+            string body = post.body;
+            transform(body.begin(), body.end(), body.begin(), ::tolower);
+            if (body.find(searchWord) != string::npos) 
+            {
+                result.push_back(make_tuple(user.id, user.name, post.body));
+            }
+        }
+    }
+
+    return result;
+}
+
 //****************abdelrahman  */
 
 //**************mohamed-hamdy */
