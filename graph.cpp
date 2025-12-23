@@ -185,6 +185,207 @@ bool graph<T>::isMarked(T vertex)
 //*******************************mohamed*************** */
 
 //*************Zeyad*************** */
+// xml file to store graph data
+
+template <class T>
+void graph<T>::convertXMLtoGraph(const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Error opening file: " << filename << endl;
+        return;
+    }
+    string line;
+    bool inUserID = false;
+    bool inPosts = false;
+    bool inFollowers = false;
+    bool inBody = false;
+    bool inTopic = false;
+    postData currentPost;
+    UserData currentUser;
+
+    // Read the file line by line
+    while (getline(file, line)) {
+
+        if(line.empty()) continue;                     // Skip empty lines
+
+        if (line.find( "<user>") != string::npos)
+        {
+             inUserID = true;
+        }
+        if (line.find("<id>")!= string::npos && inUserID&& !inFollowers)
+        {
+            size_t start = line.find("<id>") + 4;
+            size_t end = line.find("</id>");
+            currentUser.id = line.substr(start, end - start);
+        }
+        
+        if (line.find("<name>")!= string::npos && inUserID)
+        {
+            size_t start = line.find("<name>") + 6;
+            size_t end = line.find("</name>");
+            currentUser.name = line.substr(start, end - start);
+        }
+       
+        
+        if (line.find("<posts>")!= string::npos)
+        {
+            inPosts = true;
+        }
+
+        if (line.find("<post>") != string::npos && inPosts)
+        {
+            currentPost = postData();
+        }
+
+        if (line.find("<body>") != string::npos)
+        {
+            inBody = true;
+            continue;
+        }
+
+        if (line.find("</body>") != string::npos)
+        {
+            inBody = false;
+            continue;
+        }
+
+        if (inBody)
+        {
+            currentPost.body += line + " ";
+        }
+
+        if (line.find("<topic>") != string::npos)
+        {
+            inTopic = true;
+            continue;
+        }
+
+        if (line.find("</topic>") != string::npos)
+        {
+            inTopic = false;
+            continue;
+        }
+
+        if (inTopic)
+        {
+            currentPost.topics.push_back(line);
+        }
+
+
+        if (line.find("</post>") != string::npos)
+        {
+            currentUser.posts.push_back(currentPost);
+        }
+
+
+        if (line.find("<followers>")!= string::npos)
+        {
+            inFollowers = true;
+        }
+        if (line.find("<id>")!= string::npos && inFollowers)
+        {
+            size_t start = line.find("<id>") + 4;
+            size_t end = line.find("</id>");
+            string followerID = line.substr(start, end - start);
+            currentUser.followers.push_back(followerID);
+        }
+        if (line.find("</followers>")!= string::npos)
+        {
+            inFollowers = false;
+        }
+        if (line.find("</user>")!= string::npos)
+        {
+            inUserID = false;
+            // Store the current user data in the map
+            ID_MAP[currentUser.id] = currentUser;
+            // Clear currentUser for the next user
+            insertVertex(currentUser.id);
+            currentUser = UserData();
+        }
+        
+
+    }
+    file.close();
+    addEdgesFromFollowers();
+}
+
+// add edge between users based on followers
+template <class T>
+void graph<T>::addEdgesFromFollowers() {
+    for (const auto& pair : ID_MAP) {
+        const UserData& user = pair.second;
+        for (const string& followerID : user.followers) {
+            if (ID_MAP.find(followerID) != ID_MAP.end()) {
+                addEdge(followerID, user.id, 1); // Assuming weight of 1 for each follower relationship
+                ID_MAP[followerID].active_num++;
+            }
+        }
+    }
+}
+// print the user map(optional for debugging)
+template <class T>
+void graph<T>::printMap() const {
+    cout << "\n===== USERS MAP =====\n";
+
+    for (const auto& pair : ID_MAP) {
+        const UserData& user = pair.second;
+
+        cout << "User ID   : " << user.id << endl;
+        cout << "Name      : " << user.name << endl;
+
+        cout << "Posts     :\n";
+        for (const postData& p : user.posts) {
+            cout << "  Body   : " << p.body << endl;
+
+            cout << "  Topics : ";
+            for (const string& t : p.topics) {
+                cout << "[" << t << "] ";
+            }
+            cout << endl;
+        }
+
+        cout << "Followers : ";
+        for (const string& f : user.followers) {
+            cout << f << " ";
+        }
+        cout << endl;
+
+        cout << "----------------------\n";
+    }
+}
+
+template <class T>
+void graph<T>::exportToDot(const string& filename) const {
+    ofstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Error opening file for writing: " << filename << endl;
+        return;
+    }
+
+    file << "digraph G {\n";       // directed graph
+    file << "  rankdir=LR;\n";     // left-to-right layout (optional)
+
+    // Define all vertices
+    for (int i = 0; i < numVertices; i++) {
+        file << "  \"" << vertices[i] << "\";\n";
+    }
+
+    file << "\n";
+
+    // Define all edges without weight
+    for (int i = 0; i < numVertices; i++) {
+        for (int j = 0; j < numVertices; j++) {
+            if (edges[i][j] != inf) {
+                file << "  \"" << vertices[i] << "\" -> \"" << vertices[j] << "\";\n";
+            }
+        }
+    }
+
+    file << "}\n";
+    file.close();
+
+    cout << "DOT file created: " << filename << endl;
+}
 
 //** Zeyad *********************/
 
