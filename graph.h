@@ -44,13 +44,14 @@ private:
     T *vertices;
     int **edges;
     bool *marks;
-    map<string, UserData> ID_MAP;
+
     int active_num;
 
 public:
     graph(int maxVertic);
     ~graph();
 
+    map<string, UserData> ID_MAP;
     void makeEmpty();
     bool isEmpty() const;
     bool isFull() const;

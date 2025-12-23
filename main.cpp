@@ -22,7 +22,7 @@ string getArg(int &i, int argc, char *argv[]) {
 }
 
 /* ===== MAIN ===== */
-
+/*
 int main(int argc, char *argv[]) {
 
   if (argc < 2) {
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
       topic = getArg(i, argc, argv);
   }
 
-  /* ===== COMMAND DISPATCH ===== */
+
 
   if (command == "verify") {
     bool valid = checkXMLConsistency(inputFile);
@@ -181,4 +181,4 @@ int main(int argc, char *argv[]) {
   }
 
   return 0;
-}
+}*/
