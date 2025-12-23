@@ -327,4 +327,32 @@ vector<pair<string, string>> graph<T>::Suggest(const string &user)
 
 //**************mohamed-hamdy */
 
+template <class T>
+vector<tuple<string,string,string>> graph<T>::topicPostSearch(const string& Topic) {
+    vector<tuple<string,string,string>> result;
+
+    string searchTopic = Topic;
+    transform(searchTopic.begin(), searchTopic.end(), searchTopic.begin(), ::tolower);
+
+    for (const auto& pair : ID_MAP) {
+        const UserData& user = pair.second;
+
+        for (const postData& post : user.posts) 
+        {
+            for (const string& topic : post.topics) // Loop through all topics
+            {   
+                string lowerTopic = topic;
+                transform(lowerTopic.begin(), lowerTopic.end(), lowerTopic.begin(), ::tolower);
+
+                if (lowerTopic.find(searchTopic) != string::npos) {  
+                    result.push_back(make_tuple(user.id, user.name, post.body));
+                    break; 
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 //**************mohamed-hamdy */
