@@ -12,7 +12,6 @@ find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
 # ----- ADD ALL SOURCE FILES -----
 add_executable(DSA_PROJECTT
-        gui.cpp
         minifier.cpp
         formatter.cpp
         xmlCheck.h
@@ -20,6 +19,7 @@ add_executable(DSA_PROJECTT
         SimpleXmlToJson.cpp
         SimpleXmlToJson.h
         main.cpp
+        gui.cpp
 )
 
 target_link_libraries(DSA_PROJECTT
