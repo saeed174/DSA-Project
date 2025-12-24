@@ -22,7 +22,7 @@ string getArg(int &i, int argc, char *argv[]) {
 }
 
 /* ===== MAIN ===== */
-/*
+
 int main(int argc, char *argv[]) {
 
   if (argc < 2) {
@@ -37,7 +37,6 @@ int main(int argc, char *argv[]) {
   int id = -1;
   vector<int> ids;
   string word, topic;
-
   for (int i = 2; i < argc; i++) {
     string arg = argv[i];
 
@@ -57,10 +56,12 @@ int main(int argc, char *argv[]) {
         s.erase(0, pos + 1);
       }
       ids.push_back(stoi(s));
-    } else if (arg == "-w")
+    } else if (arg == "-w"){
       word = getArg(i, argc, argv);
-    else if (arg == "-t")
+    }
+    else if (arg == "-t"){
       topic = getArg(i, argc, argv);
+    }
   }
 
 
@@ -111,7 +112,8 @@ int main(int argc, char *argv[]) {
       graph<string> g(100);
       g.convertXMLtoGraph(inputFile);
       g.addEdgesFromFollowers();
-      g.exportToDot(outputFile);
+      g.exportToDot("output.dot");
+      convertDotToJpg("output.dot", "output_file.jpg");
   } else if (command == "most_active") {
       graph<string> g(100);
       g.convertXMLtoGraph(inputFile);
@@ -154,20 +156,24 @@ int main(int argc, char *argv[]) {
     for (const auto& pair : g.ID_MAP) {
       const UserData& user = pair.second;
       bool match = false;
-      if (!word.empty() && user.name.find(word) != string::npos) {
-        match = true;
-      }
-      if (!topic.empty()) {
-        for (const postData& post : user.posts) {
-          for (const string& t : post.topics) {
-            if (t == topic) {
+
+      if (!word.empty()) {
+          if (user.name.find(word) != string::npos)
               match = true;
-              break;
-            }
-          }
-          if (match) break;
-        }
       }
+
+      if (!topic.empty()) {
+          for (const postData& post : user.posts) {
+              for (const string& t : post.topics) {
+                  if (t.find(topic) != string::npos) { // partial match
+                      match = true;
+                      break;
+                  }
+              }
+              if (match) break;
+          }
+      }
+
       if (match) {
         results.push_back({user.id, user.name});
       }
@@ -176,9 +182,19 @@ int main(int argc, char *argv[]) {
     for (const auto& p : results) {
       cout << "ID = " << p.first << ", Name = " << p.second << endl;
     }
-  } else {
+  }
+  else if(command == "correct") {
+      string xmlcontent = correctMismatchedTags(readXMLFile_withSpaces(inputFile));
+      if (!outputFile.empty()) {
+        ofstream out(outputFile);
+        out << xmlcontent;
+        out.close();
+      }
+        cout << xmlcontent;
+  }
+  else {
     cerr << "Unknown command: " << command << endl;
   }
 
   return 0;
-}*/
+}

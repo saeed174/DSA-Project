@@ -431,6 +431,18 @@ void graph<T>::exportToDot(const string& filename) const {
     file.close();
 }
 
+void convertDotToJpg(const string& dotFile, const string& jpgFile)
+{
+    string command = "dot -Tjpg \"" + dotFile + "\" -o \"" + jpgFile + "\"";
+    int result = system(command.c_str());
+
+    if (result != 0) {
+        cerr << "Failed to convert DOT to JPG. Make sure Graphviz is installed.\n";
+    } else {
+        cout << "JPG file created: " << jpgFile << endl;
+    }
+}
+
 template <class T>
 pair<string, string> graph<T>::Most_Influencer()
 {

@@ -1,0 +1,29 @@
+g++ -std=c++17 graph.h formatter.h formatter.cpp compression_decompression.h compression_decompression.cpp  minifier.h minifier.cpp  SimpleXmlToJson.h SimpleXmlToJson.cpp  Stack.h main.cpp -o xml_editor
+
+xml_editor verify -i input_file.xml
+
+xml_editor correct -i input_file.xml -o input_file.xml
+
+xml_editor correct -i input_file.xml -o output_file.xml
+
+xml_editor format -i input_file.xml -o output_file.xml
+
+xml_editor json -i input_file.xml -o output_file.json
+
+xml_editor compress -i input_file.xml -o output_file.comp
+
+xml_editor decompress -i output_file.comp -o output_file.xml
+
+xml_editor draw -i input_file.xml -o output_file.jpg
+
+xml_editor most_active -i input_file.xml
+
+xml_editor most_influencer -i input_file.xml
+
+xml_editor mutual -i input_file.xml -ids 2,3
+
+xml_editor suggest -i input_file.xml -id 2
+
+xml_editor search -w Ahmed -i input_file.xml
+
+xml_editor search -t education -i input_file.xml
