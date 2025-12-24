@@ -1,20 +1,28 @@
 #include <QLabel>
-#include <QLineEdit>
+#include <fstream>
+
+#include <QProcess>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QTextEdit>
 #include <QFile>
 #include <QSplitter>
 #include <QStyle>
 #include <QApplication>
 #include <QGraphicsDropShadowEffect>
+#include <QInputDialog>
 #include "xmlCheck.h"
 #include "minifier.h"
 #include "compression_decompression.h"
 #include "formatter.h"
-# include "SimpleXmlToJson.h"
+#include "SimpleXmlToJson.h"
+#include "graph.h"
+#include <QTextEdit>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QPropertyAnimation>
+
 
 // ==================== Write xml =====================
 class WriteXmlWindow : public QWidget {
@@ -167,98 +175,386 @@ private:
 };
 
 // ==================== ShowGraph =====================
-class Graph : public QWidget {
-    QString filePath;
-
+class GraphWindow : public QWidget
+{
 public:
-    Graph(QString selectedPath, QWidget* parent = nullptr)
-        : QWidget(parent), filePath(selectedPath)
+    explicit GraphWindow(graph<string>* g, QWidget* parent = nullptr)
+        : QWidget(parent), socialGraph(g)
     {
         setWindowTitle("Graph Operations");
-        resize(520, 420);
+        resize(1000, 700);
+        setStyleSheet("background:#020617;");
 
-        this->setStyleSheet("background:#020617;");
-
-        // ================= MAIN LAYOUT =================
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
-        mainLayout->setContentsMargins(40, 40, 40, 40);
-        mainLayout->setSpacing(25);
+        mainLayout->setContentsMargins(30, 30, 30, 30);
+        mainLayout->setSpacing(20);
 
-        // ================= TITLE =================
+        // ===== TITLE =====
         QLabel* title = new QLabel("GRAPH FUNCTIONS", this);
         title->setAlignment(Qt::AlignCenter);
         title->setStyleSheet(
-            "font-size: 22px;"
-            "font-weight: 800;"
-            "letter-spacing: 2px;"
-            "color: #e5e7eb;"
+            "font-size:24px;"
+            "font-weight:900;"
+            "letter-spacing:3px;"
+            "color:#38bdf8;"
         );
         mainLayout->addWidget(title);
 
-        // ================= GRID =================
+        // ===== BUTTONS =====
         QGridLayout* grid = new QGridLayout();
-        grid->setHorizontalSpacing(25);
-        grid->setVerticalSpacing(20);
+        grid->setSpacing(15);
 
-        fun1 = createButton("Function 1", "#3b82f6");
-        fun2 = createButton("Function 2", "#22c55e");
-        fun3 = createButton("Function 3", "#f59e0b");
-        fun4 = createButton("Function 4", "#ef4444");
+        btnInfluencer  = createButton("Most Influencer", "#3b82f6");
+        btnActive      = createButton("Most Active", "#22c55e");
+        btnMutual      = createButton("Mutual Followers", "#f59e0b");
+        btnSuggest     = createButton("Suggest Users", "#ef4444");
+        btnWordSearch  = createButton("Search Word", "#8b5cf6");
+        btnTopicSearch = createButton("Search Topic", "#14b8a6");
+        btnClear       = createButton("Clear Output", "#64748b");
+        btnexport      = createButton("Export Graph", "#22c55e");
 
-        grid->addWidget(fun1, 0, 0);
-        grid->addWidget(fun2, 0, 1);
-        grid->addWidget(fun3, 1, 0);
-        grid->addWidget(fun4, 1, 1);
+        grid->addWidget(btnInfluencer,  0, 0);
+        grid->addWidget(btnActive,      0, 1);
+        grid->addWidget(btnWordSearch,  0, 2);
+        grid->addWidget(btnClear,       0, 3);
 
-        mainLayout->addStretch();
+        grid->addWidget(btnMutual,      1, 0);
+        grid->addWidget(btnSuggest,     1, 1);
+        grid->addWidget(btnTopicSearch, 1, 2);
+        grid->addWidget(btnexport,      1, 3);
+
         mainLayout->addLayout(grid);
-        mainLayout->addStretch();
 
-        applyShadow(fun1);
-        applyShadow(fun2);
-        applyShadow(fun3);
-        applyShadow(fun4);
+        // ===== IMAGE =====
+        imageLabel = new QLabel(this);
+        imageLabel->setMinimumSize(800, 450);
+        imageLabel->setAlignment(Qt::AlignCenter);
+        imageLabel->setStyleSheet(
+            "border:2px dashed #334155;"
+            "border-radius:16px;"
+        );
+        mainLayout->addWidget(imageLabel);
+
+        // ===== TABLE =====
+        outputTable = new QTableWidget(this);
+        outputTable->setColumnCount(3);
+        outputTable->setHorizontalHeaderLabels(
+            {"User ID", "User Name", "Content"}
+        );
+        outputTable->horizontalHeader()->setStretchLastSection(true);
+        outputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        outputTable->verticalHeader()->setVisible(false);
+        outputTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+        outputTable->setStyleSheet(
+            "QTableWidget {"
+            " background:#020617;"
+            " color:#e5e7eb;"
+            " gridline-color:#334155;"
+            " border-radius:12px;"
+            "}"
+            "QHeaderView::section {"
+            " background:#0f172a;"
+            " color:#38bdf8;"
+            " font-weight:700;"
+            "}"
+        );
+
+        mainLayout->addWidget(outputTable);
+
+        // ===== CONNECTIONS =====
+        connect(btnInfluencer,  &QPushButton::clicked, this, &GraphWindow::runbtnInfluencer);
+        connect(btnActive,      &QPushButton::clicked, this, &GraphWindow::runbtnActive);
+        connect(btnMutual,      &QPushButton::clicked, this, &GraphWindow::runbtnMutual);
+        connect(btnSuggest,     &QPushButton::clicked, this, &GraphWindow::runbtnSuggest);
+        connect(btnWordSearch,  &QPushButton::clicked, this, &GraphWindow::runbtnWordSearch);
+        connect(btnTopicSearch, &QPushButton::clicked, this, &GraphWindow::runbtnTopicSearch);
+        connect(btnClear,       &QPushButton::clicked, this, &GraphWindow::clearOutput);
+        connect(btnexport,      &QPushButton::clicked, this, &GraphWindow::runbtnExport);
     }
 
 private:
-    QPushButton* fun1;
-    QPushButton* fun2;
-    QPushButton* fun3;
-    QPushButton* fun4;
+    graph<string>* socialGraph;
+    QPushButton *btnInfluencer, *btnActive, *btnMutual,
+                *btnSuggest, *btnWordSearch,
+                *btnTopicSearch, *btnClear, *btnexport;
 
-    // ================= BUTTON STYLE =================
+    QTableWidget* outputTable;
+    QLabel* imageLabel;
+
     QPushButton* createButton(const QString& text, const QString& color)
     {
-        QPushButton* btn = new QPushButton(text);
-        btn->setCursor(Qt::PointingHandCursor);
-        btn->setFixedHeight(52);
-
+        QPushButton* btn = new QPushButton(text, this);
+        btn->setFixedHeight(46);
         btn->setStyleSheet(
             "QPushButton {"
             " background:" + color + ";"
             " color:white;"
             " border-radius:14px;"
-            " padding:14px;"
-            " font-size:15px;"
             " font-weight:600;"
             "}"
-            "QPushButton:hover { background:" + color + "cc; }"
         );
-
         return btn;
     }
 
-    // ================= SHADOW =================
-    void applyShadow(QWidget* w)
+    // ===== SLOTS =====
+    void clearOutput()
     {
-        QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(this);
-        shadow->setBlurRadius(25);
-        shadow->setColor(QColor(0, 0, 0, 120));
-        shadow->setOffset(0, 6);
-        w->setGraphicsEffect(shadow);
+        outputTable->setRowCount(0);
     }
-};
 
+
+
+    bool convertDotToJpg(const QString& dotFile, const QString& pngFile)
+    {
+        QProcess p;
+        // CHANGE: -Tjpg to -Tpng
+        p.start("dot", {"-Tpng", dotFile, "-o", pngFile});
+        p.waitForFinished();
+        // OPTIONAL: Check for errors from QProcess
+        if (p.exitCode() != 0) {
+            // You can print the error output for debugging
+            // cerr << "Graphviz Error: " << p.readAllStandardError().toStdString() << endl;
+            return false;
+        }
+        return QFile::exists(pngFile);
+    }
+
+    void runbtnExport()
+    {
+        QString dotPath = QFileDialog::getSaveFileName(
+            this, "Save Graph", "graph.dot", "DOT Files (*.dot)"
+        );
+        if (dotPath.isEmpty()) return;
+
+        QString pngPath = dotPath;
+        // CHANGE: .jpg to .png
+        pngPath.replace(".dot", ".png");
+
+        socialGraph->exportToDot(dotPath.toStdString());
+
+        // CHANGE: dotPath, jpgPath to dotPath, pngPath
+        if (!convertDotToJpg(dotPath, pngPath))
+        {
+            addRow("Export", "Error", "Graphviz failed");
+            return;
+        }
+
+        // CHANGE: jpgPath to pngPath
+        showGraphImage(pngPath);
+    }
+
+    void showGraphImage(const QString& path)
+    {
+        QPixmap pix(path);
+        if (pix.isNull())
+        {
+            addRow("Image Error", "Status", "Failed to load image");
+            return;
+        }
+
+        imageLabel->setPixmap(
+            pix.scaled(
+                imageLabel->size(),
+                Qt::KeepAspectRatio,
+                Qt::SmoothTransformation
+            )
+        );
+
+        addRow("Export", "Success", "Graph image displayed");
+    }
+
+    void addRow(const QString& a, const QString& b, const QString& c)
+    {
+        int r = outputTable->rowCount();
+        outputTable->insertRow(r);
+        outputTable->setItem(r, 0, new QTableWidgetItem(a));
+        outputTable->setItem(r, 1, new QTableWidgetItem(b));
+        outputTable->setItem(r, 2, new QTableWidgetItem(c));
+    }
+
+
+void runbtnInfluencer()
+{
+    clearOutput();
+    auto r = socialGraph->Most_Influencer();
+
+    if (r.first.empty())
+    {
+        addRow("Info", "-", "No influencer found");
+        return;
+    }
+
+    addRow(
+        QString::fromStdString(r.first),
+        QString::fromStdString(r.second),
+        "Top Influencer"
+    );
+}
+
+void runbtnActive()
+{
+    clearOutput();
+    auto r = socialGraph->Most_Active();
+
+    if (r.first.empty())
+    {
+        addRow("Info", "-", "No active user found");
+        return;
+    }
+
+    addRow(
+        QString::fromStdString(r.first),
+        QString::fromStdString(r.second),
+        "Most Active User"
+    );
+}
+
+void runbtnMutual()
+{
+    clearOutput();
+
+    bool ok;
+    QString input = QInputDialog::getText(
+        this,
+        "Mutual Followers",
+        "Enter IDs (1,2,3):",
+        QLineEdit::Normal,
+        "",
+        &ok
+    );
+
+    if (!ok || input.trimmed().isEmpty())
+        return;
+
+    vector<string> users;
+    for (auto& s : input.split(","))
+        users.push_back(s.trimmed().toStdString());
+
+    auto res = socialGraph->MutualFollowers(users);
+
+    if (res.empty())
+    {
+        addRow("Info", "-", "No mutual followers");
+        return;
+    }
+
+    for (auto& p : res)
+    {
+        addRow(
+            QString::fromStdString(p.first),
+            QString::fromStdString(p.second),
+            "Mutual Follower"
+        );
+    }
+}
+
+void runbtnSuggest()
+{
+    clearOutput();
+
+    bool ok;
+    QString id = QInputDialog::getText(
+        this,
+        "Suggest Users",
+        "Enter User ID:",
+        QLineEdit::Normal,
+        "",
+        &ok
+    );
+
+    if (!ok || id.trimmed().isEmpty())
+        return;
+
+    auto res = socialGraph->Suggest(id.toStdString());
+
+    if (res.empty())
+    {
+        addRow("Info", "-", "No suggestions found");
+        return;
+    }
+
+    for (auto& p : res)
+    {
+        addRow(
+            QString::fromStdString(p.first),
+            QString::fromStdString(p.second),
+            "Suggested User"
+        );
+    }
+}
+
+void runbtnWordSearch()
+{
+    clearOutput();
+
+    bool ok;
+    QString word = QInputDialog::getText(
+        this,
+        "Search Word",
+        "Enter word:",
+        QLineEdit::Normal,
+        "",
+        &ok
+    );
+
+    if (!ok || word.trimmed().isEmpty())
+        return;
+
+    auto res = socialGraph->WordPostSearch(word.toStdString());
+
+    if (res.empty())
+    {
+        addRow("Info", "-", "No posts found");
+        return;
+    }
+
+    for (auto& t : res)
+    {
+        addRow(
+            QString::fromStdString(get<0>(t)),
+            QString::fromStdString(get<1>(t)),
+            QString::fromStdString(get<2>(t))
+        );
+    }
+}
+
+void runbtnTopicSearch()
+{
+    clearOutput();
+
+    bool ok;
+    QString topic = QInputDialog::getText(
+        this,
+        "Search Topic",
+        "Enter topic:",
+        QLineEdit::Normal,
+        "",
+        &ok
+    );
+
+    if (!ok || topic.trimmed().isEmpty())
+        return;
+
+    auto res = socialGraph->topicPostSearch(topic.toStdString());
+
+    if (res.empty())
+    {
+        addRow("Info", "-", "No posts found");
+        return;
+    }
+
+    for (auto& t : res)
+    {
+        addRow(
+            QString::fromStdString(get<0>(t)),
+            QString::fromStdString(get<1>(t)),
+            QString::fromStdString(get<2>(t))
+        );
+    }
+}
+
+};
 
 // ==================== SHOW FILE WINDOW =====================
 class ShowFileWindow : public QWidget {
@@ -371,6 +667,8 @@ public:
         Minifying = createButton("Minify XML", style()->standardIcon(QStyle::SP_ComputerIcon), "#6366f1");
         MisMatchTag =createButton("MisMatchTag",style()->standardIcon(QStyle::SP_MessageBoxWarning), "#ff9800");
         CorrectMismatchTag=createButton("CorrectMismatchTag",style()->standardIcon(QStyle::SP_MediaPlay), "#4caf50");
+        SaveResult = createButton("Save Result",style()->standardIcon(QStyle::SP_DialogSaveButton),"#22c55aa");
+
 
 
         QGridLayout* grid = new QGridLayout();
@@ -385,6 +683,7 @@ public:
         grid->addWidget(Minifying, 2, 1);
         grid->addWidget(MisMatchTag, 3, 0);
         grid->addWidget(CorrectMismatchTag, 3, 1);
+        grid->addWidget(SaveResult, 4, 0, 1, 2);
 
         cardLayout->addLayout(grid);
 
@@ -480,6 +779,8 @@ public:
         connect(Converting_to_JSON, &QPushButton::clicked, this, &OperationsWindow::onConvertClicked);
         connect(MisMatchTag,QPushButton::clicked,this,&OperationsWindow::runMismatchTag);
         connect(CorrectMismatchTag,QPushButton::clicked,this,&OperationsWindow::runCorrectMismatchTag);
+        connect(SaveResult, &QPushButton::clicked,this, &OperationsWindow::saveResultToFile);
+
     }
     void setFilePath(const QString& path) {
         filePath = path;
@@ -493,8 +794,9 @@ private:
     QPushButton* Compressing;
     QPushButton* Decompressing;
     QPushButton* Minifying;
-    QPushButton* MisMatchTag;////////////////////////////////////////
+    QPushButton* MisMatchTag;
     QPushButton* CorrectMismatchTag;
+    QPushButton* SaveResult;
     QTextEdit* beforeEdit;
     QTextEdit* afterEdit;
 
@@ -511,7 +813,7 @@ private:
             " border-radius:10px;"
             " font-size:14px;"
             " font-weight:bold;"
-            " text-align:left;"
+            " text-align:center;"
             "}"
             "QPushButton:hover { background:" + colorHex + "cc; }"
         );
@@ -621,12 +923,10 @@ private slots:
     {
         string xml = readXMLFile_withSpaces(filePath.toStdString());
 
-        // Find mismatches first
         vector<pair<size_t, string>> mismatches = findMismatchedTags(xml);
 
         beforeEdit->setText(QString::fromStdString(xml));
 
-        // If no mismatches → do nothing
         if (mismatches.empty())
         {
             afterEdit->setText("✔ No mismatched tags found.\nNo correction needed.");
@@ -634,17 +934,99 @@ private slots:
             return;
         }
 
-        // Correct only if mismatches exist
+        // Correct XML
         string correctedXML = correctMismatchedTags(xml);
 
+        // Write back to the same file
+        bool saved = writeXMLFile(filePath.toStdString(), correctedXML);
+
         QString result;
-        result += "✅ Mismatched tags corrected successfully.\n\n";
-        result += "---- Corrected XML ----\n\n";
-        result += QString::fromStdString(correctedXML);
+        if (saved)
+        {
+            result += "✅ Mismatched tags corrected successfully.\n";
+            result += "💾 File updated successfully.\n\n";
+            result += "---- Corrected XML ----\n\n";
+            result += QString::fromStdString(correctedXML);
+        }
+        else
+        {
+            result += "❌ Error: Could not save corrected XML to file.\n";
+        }
 
         afterEdit->setText(result);
         afterEdit->moveCursor(QTextCursor::Start);
     }
+
+    bool writeXMLFile(const string& path, const string& content)
+    {
+        ofstream out(path);
+        if (!out.is_open())
+            return false;
+
+        out << content;
+        out.close();
+        return true;
+    }
+
+    void saveResultToFile()
+    {
+        QString content = afterEdit->toPlainText().trimmed();
+
+        if (content.isEmpty())
+        {
+            QMessageBox::warning(this, "Save",
+                                 "No result to save.");
+            return;
+        }
+
+        QString fileName = QFileDialog::getSaveFileName(
+            this,
+            "Save Result",
+            "",
+            "XML File (*.xml);;JSON File (*.json)"
+        );
+
+        if (fileName.isEmpty())
+            return;
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QMessageBox::critical(this, "Error",
+                                  "Could not save file.");
+            return;
+        }
+
+        QTextStream out(&file);
+
+        // لو المستخدم اختار JSON
+        if (fileName.endsWith(".json", Qt::CaseInsensitive))
+        {
+            // لو afterEdit فيه XML → نحوله JSON
+            if (content.trimmed().startsWith("<"))
+            {
+                SimpleXmlToJson converter;
+                out << QString::fromStdString(
+                    converter.convert(content.toStdString())
+                );
+            }
+            else
+            {
+                out << content; // أصلاً JSON
+            }
+        }
+        else // XML
+        {
+            out << content;
+        }
+
+        file.close();
+
+        QMessageBox::information(this, "Saved",
+                                 "File saved successfully ✔");
+    }
+
+
 };
 // ==================== MAIN WINDOW =====================
 class Window : public QWidget {
@@ -699,7 +1081,7 @@ public:
         actions->setSpacing(15);
 
         QPushButton* operationsBtn = new QPushButton("Operations");
-        QPushButton* graphBtn      = new QPushButton("Show Graph");
+        QPushButton* graphBtn      = new QPushButton("convertToGraph");
         QPushButton* showFileBtn   = new QPushButton("Show File");
 
         styleSecondaryButton(operationsBtn, "#6366f1");
@@ -733,8 +1115,10 @@ public:
 private:
     QString selectedFilePath;
     OperationsWindow* opWindow = nullptr;
-    Graph* graph = nullptr;
+    GraphWindow* graphWindow = nullptr;
     WriteXmlWindow* writeWindow = nullptr;
+    graph<string>* socialGraph = nullptr;
+
 
     // ================= STYLES =================
     void stylePrimaryButton(QPushButton* btn, const QString& color) {
@@ -805,18 +1189,42 @@ private:
         viewer->show();
     }
 
-    void openGraph() {
+    void openGraph()
+    {
         if (selectedFilePath.isEmpty()) {
             QMessageBox::warning(this, "Error", "Select a file first.");
             return;
         }
 
-        if (!graph)
-            graph = new Graph(selectedFilePath);
+        // Convert QString -> std::string
+        string xmlPath = selectedFilePath.toStdString();
 
-        graph->show();
-        graph->raise();
+        // Create graph (adjust size if needed)
+        if (socialGraph)
+            delete socialGraph;
+
+        socialGraph = new graph<string>(1000); // max vertices
+
+        // Convert XML -> Graph
+        socialGraph->convertXMLtoGraph(xmlPath);
+
+        QMessageBox::information(
+            this,
+            "Graph Created",
+            "XML converted to graph successfully!"
+        );
+
+        // Optional: show GraphWindow
+        if (graphWindow) {
+            graphWindow->close();
+            delete graphWindow;
+        }
+
+        graphWindow = new GraphWindow(socialGraph);
+        graphWindow->show();
+
     }
+
 
     void openWriteXml() {
         writeWindow = new WriteXmlWindow(
@@ -839,4 +1247,3 @@ int main(int argc, char* argv[]) {
     window.show();
     return app.exec();
 }
-
