@@ -15,7 +15,7 @@ void compressor::compress_file(const string& input_path, const string& output_pa
     build_unused_char(data,unused_char);
     vector<unsigned char> changed_data;
     vector<pair<pair<unsigned char, unsigned char>, unsigned char>> changes;
-    map<pair<unsigned char, unsigned char>, int> freq;
+    unordered_map<pair<unsigned char, unsigned char>, int, PairHash> freq;
     pair<unsigned char, unsigned char> most_freq_pair;
     int max_freq;
     unsigned char new_char;
@@ -51,7 +51,7 @@ vector<unsigned char> compressor::read_binary_file(const string& path)
     
     if(!input)
     {
-        cout << "cannot open the file";
+        cout << "cannot open the file: " << path;
         return {};
     }
 
@@ -65,7 +65,7 @@ void compressor::write_binary_file(const vector<unsigned char>& compressed_data,
     ofstream output(output_path, ios::binary);
     if(!output)
     {
-        cout << "cannot open the file for writing";
+        cout << "cannot open the file for writing: " << output_path;
         return;
     }
 
@@ -82,14 +82,14 @@ void compressor::write_binary_file(const vector<unsigned char>& compressed_data,
     output.write((const char*)compressed_data.data() , compressed_data.size());
     
     if(!output)
-        cout << "write failed";
+        cout << "write failed for: " << output_path;
     
     output.close();
 }
 
-map<pair<unsigned char, unsigned char>, int> compressor::build_Pair_Frequencies(const vector<unsigned char>& data)
+unordered_map<pair<unsigned char, unsigned char>, int, PairHash> compressor::build_Pair_Frequencies(const vector<unsigned char>& data)
 {
-    map<pair<unsigned char, unsigned char>, int> freq;
+    unordered_map<pair<unsigned char, unsigned char>, int, PairHash> freq;
     // string s;
     pair<unsigned char, unsigned char> s; 
     for(int i = 1 ; i < data.size() ; i++)
@@ -101,7 +101,7 @@ map<pair<unsigned char, unsigned char>, int> compressor::build_Pair_Frequencies(
     return freq;
 }
 
-pair<unsigned char, unsigned char> compressor::find_mostFreq_pair(map<pair<unsigned char, unsigned char>, int>& freq)
+pair<unsigned char, unsigned char> compressor::find_mostFreq_pair(unordered_map<pair<unsigned char, unsigned char>, int, PairHash>& freq)
 {
     pair<unsigned char, unsigned char> most_freq_pair;
     int max_freq = 0;
@@ -135,6 +135,9 @@ unsigned char compressor::new_unused_char(stack <unsigned char>& unused_char)
 
 void compressor::apply_change(const vector<unsigned char>& data, vector<unsigned char>& output, pair<unsigned char, unsigned char>& most_freq, unsigned char new_char)
 {
+	// alocate all necessary memory at once
+	output.reserve(data.size());
+	
     int i = 0;
     while (i < data.size())
     {
@@ -164,7 +167,7 @@ void decompressor::retrieve_data_changes(const string& input_path, vector<unsign
     
     if(!input)
     {
-        cout << "cannot open the file";
+        cout << "cannot open the file: " << input_path;
         return;
     }
 
@@ -193,6 +196,19 @@ void decompressor::decompress_file(const string& input_path, const string& outpu
     vector<pair<pair<unsigned char, unsigned char>, unsigned char>> changes;
     retrieve_data_changes(input_path, compressed_data, changes);
 
+    if (changes.empty())
+    {
+        ofstream output(output_path, ios::binary);
+        if(!output) { cout << "cannot open file: " << output_path; return; }
+        output.write((const char*)compressed_data.data(), compressed_data.size());
+        
+        if(!output)
+        cout << "write failed for: " << output_path;
+        
+        output.close();
+        return;
+    }
+
     vector<unsigned char> data;
     for(int i = changes.size()-1 ; i >= 0 ; i--)
     {
@@ -218,14 +234,14 @@ void decompressor::decompress_file(const string& input_path, const string& outpu
     ofstream output(output_path, ios::binary);
     if(!output)
     {
-        cout << "cannot open the file for writing";
+        cout << "cannot open the file for writing: " << output_path;
         return;
     }
 
     output.write((const char*)data.data() , data.size());
     
     if(!output)
-        cout << "write failed";
+        cout << "write failed for: " << output_path;
     
     output.close();
 }

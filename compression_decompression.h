@@ -4,9 +4,20 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include<map>
+#include <unordered_map>
 #include <stack>
 using namespace std;
+
+
+struct PairHash 
+{
+    size_t operator()(const pair<unsigned char, unsigned char>& p) const 
+	{
+        // Shift first byte 8 bits left and combine with second byte
+        return (p.first << 8) | p.second;
+    }
+};
+
 
 // Compressor class handles compressing a binary file using a BPE-like algorithm
 class compressor
@@ -31,12 +42,12 @@ class compressor
         // Build frequency map of all consecutive byte pairs in the data
         // data: input vector of bytes
         // Returns a map: key = pair of bytes, value = count of occurrences
-        map<pair<unsigned char, unsigned char>, int> build_Pair_Frequencies(const vector<unsigned char>& data);
+        unordered_map<pair<unsigned char, unsigned char>, int, PairHash> build_Pair_Frequencies(const vector<unsigned char>& data);
         
         // Find the most frequent pair of bytes from the frequency map
         // freq: map of pair frequencies
         // Returns the pair of bytes that appears most frequently
-        pair<unsigned char, unsigned char> find_mostFreq_pair(map<pair<unsigned char, unsigned char>, int>& freq);
+        pair<unsigned char, unsigned char> find_mostFreq_pair(unordered_map<pair<unsigned char, unsigned char>, int, PairHash>& freq);
         
         // Build a stack of unused bytes that do not appear in the original data
         // data: input bytes
