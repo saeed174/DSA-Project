@@ -561,6 +561,7 @@ vector<tuple<string,string,string>> graph<T>::WordPostSearch(const string& word)
             if (body.find(searchWord) != string::npos)
             {
                 result.push_back(make_tuple(user.id, user.name, post.body));
+				break;
             }
         }
     }
